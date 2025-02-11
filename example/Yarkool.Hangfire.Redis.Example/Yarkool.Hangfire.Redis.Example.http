@@ -1,0 +1,6 @@
+@Yarkool.Hangfire.Redis.Sample_HostAddress = http://localhost:5243
+
+GET {{Yarkool.Hangfire.Redis.Sample_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PackageIcon>LOGO.png</PackageIcon>
+        <PackageTags>hangfire;redis;freeredis;sharpredis</PackageTags>
+        <PackageProjectUrl>https://github.com/MoondanceZ/Yarkool.Hangfire.Redis</PackageProjectUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/MoondanceZ/Yarkool.Hangfire.Redis</RepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RootNamespace>Yarkool.Hangfire.Redis</RootNamespace>
+        <Version>0.0.1</Version>
+        <Authors>Yarkool;MoondanceZ</Authors>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IsPackable>true</IsPackable>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+        <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb</AllowedOutputExtensionsInPackageBuildOutputFolder>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Hangfire.Core" Version="1.8.17"/>
+        <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Yarkool.Hangfire.Redis.Test"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../../LOGO.png" Pack="true" PackagePath="/"/>
+        <None Include="../../README.md" Pack="true" PackagePath="/"/>
+    </ItemGroup>
+
+</Project>

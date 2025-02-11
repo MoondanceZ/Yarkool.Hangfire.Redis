@@ -1,0 +1,62 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35431.28
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yarkool.Hangfire.Redis", "src\Yarkool.Hangfire.Redis\Yarkool.Hangfire.Redis.csproj", "{53139E81-ED41-453F-893F-7D8B2006BAED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yarkool.Hangfire.Redis.Test", "test\Yarkool.Hangfire.Redis.Test\Yarkool.Hangfire.Redis.Test.csproj", "{09B58AB3-FD2E-4698-AC10-86FEF906AB69}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Yarkool.Hangfire.Redis.Example", "example\Yarkool.Hangfire.Redis.Example\Yarkool.Hangfire.Redis.Example.csproj", "{230C4CD7-B71C-4907-934D-C99F0000F7BC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarkool.Hangfire.Redis.FreeRedis", "src\Yarkool.Hangfire.Redis.FreeRedis\Yarkool.Hangfire.Redis.FreeRedis.csproj", "{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarkool.Hangfire.Redis.SharpRedis", "src\Yarkool.Hangfire.Redis.SharpRedis\Yarkool.Hangfire.Redis.SharpRedis.csproj", "{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "example", "example", "{0ED2607D-4BFE-4EB5-B037-4FDE7DBCC32C}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5300C8C-AFAB-476C-864F-C786709096F4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2DFDDC47-A0B3-4827-B614-F8900B123426}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{53139E81-ED41-453F-893F-7D8B2006BAED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{53139E81-ED41-453F-893F-7D8B2006BAED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{53139E81-ED41-453F-893F-7D8B2006BAED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{53139E81-ED41-453F-893F-7D8B2006BAED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{09B58AB3-FD2E-4698-AC10-86FEF906AB69}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{09B58AB3-FD2E-4698-AC10-86FEF906AB69}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{09B58AB3-FD2E-4698-AC10-86FEF906AB69}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{09B58AB3-FD2E-4698-AC10-86FEF906AB69}.Release|Any CPU.Build.0 = Release|Any CPU
+		{230C4CD7-B71C-4907-934D-C99F0000F7BC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{230C4CD7-B71C-4907-934D-C99F0000F7BC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{230C4CD7-B71C-4907-934D-C99F0000F7BC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{230C4CD7-B71C-4907-934D-C99F0000F7BC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E3573CBA-84B2-4A32-B111-1D21739C7072}
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{230C4CD7-B71C-4907-934D-C99F0000F7BC} = {0ED2607D-4BFE-4EB5-B037-4FDE7DBCC32C}
+		{09B58AB3-FD2E-4698-AC10-86FEF906AB69} = {F5300C8C-AFAB-476C-864F-C786709096F4}
+		{53139E81-ED41-453F-893F-7D8B2006BAED} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
+		{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
+		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
+	EndGlobalSection
+EndGlobal
