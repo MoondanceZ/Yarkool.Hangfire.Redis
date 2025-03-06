@@ -201,6 +201,7 @@ public partial class FreeRedisCommand(RedisClient redisClient) : IRedisCommand
     public Task<long> LPushAsync(string key, params string[] elements) => redisClient.LPushAsync(key, elements.Select(object (x) => x).ToArray());
 
     public string? RPopLPush(string source, string destination) => redisClient.RPopLPush(source, destination);
+
     public Task<string?> RPopLPushAsync(string source, string destination) => redisClient.RPopLPushAsync(source, destination);
 
     public long LRem(string key, long count, string element) => redisClient.LRem(key, count, element);

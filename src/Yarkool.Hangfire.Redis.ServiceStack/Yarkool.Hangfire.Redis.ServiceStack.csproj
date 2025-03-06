@@ -27,7 +27,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\src\Yarkool.Hangfire.Redis\Yarkool.Hangfire.Redis.csproj" />
         <ProjectReference Include="..\Yarkool.Hangfire.Redis\Yarkool.Hangfire.Redis.csproj"/>
     </ItemGroup>
 

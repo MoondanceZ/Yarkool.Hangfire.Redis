@@ -4,7 +4,7 @@ namespace Yarkool.Hangfire.Redis.ServiceStack;
 
 internal class ServiceStackTransaction
 (
-    RedisClient.TransactionHook transaction
+    global::ServiceStack.Redis.IRedisTransaction transaction
 ) : ServiceStackCommand(transaction), IRedisTransaction
 {
     private bool _disposed;
@@ -22,7 +22,7 @@ internal class ServiceStackTransaction
 
     public object?[]? Execute()
     {
-        var result = transaction.Exec();
+        var result = transaction.Commit();
         return result;
     }
 

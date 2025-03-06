@@ -19,7 +19,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5300C8C-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2DFDDC47-A0B3-4827-B614-F8900B123426}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarkool.Hangfire.Redis.ServiceStack", "Yarkool.Hangfire.Redis.ServiceStack\Yarkool.Hangfire.Redis.ServiceStack.csproj", "{E8976010-369A-4A49-BE50-949BF946AA51}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarkool.Hangfire.Redis.ServiceStack", "src\Yarkool.Hangfire.Redis.ServiceStack\Yarkool.Hangfire.Redis.ServiceStack.csproj", "{E8976010-369A-4A49-BE50-949BF946AA51}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
