@@ -32,7 +32,7 @@ namespace Yarkool.Hangfire.Redis.Test
 
         private RedisStorage CreateStorage()
         {
-            var options = new RedisStorageOptions() { };
+            var options = new RedisStorageOptions();
             return new RedisStorage(RedisUtils.CreateClient(), options);
         }
     }

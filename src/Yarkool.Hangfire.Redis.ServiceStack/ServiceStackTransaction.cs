@@ -1,5 +1,3 @@
-using ServiceStack.Redis;
-
 namespace Yarkool.Hangfire.Redis.ServiceStack;
 
 internal class ServiceStackTransaction
@@ -8,13 +6,14 @@ internal class ServiceStackTransaction
 ) : ServiceStackCommand(transaction), IRedisTransaction
 {
     private bool _disposed;
+    private readonly global::ServiceStack.Redis.IRedisTransaction _transaction = transaction;
 
     public void Dispose()
     {
         if (_disposed)
             return;
 
-        transaction.Dispose();
+        _transaction.Dispose();
         _disposed = true;
 
         GC.SuppressFinalize(this);
@@ -22,12 +21,12 @@ internal class ServiceStackTransaction
 
     public object?[]? Execute()
     {
-        var result = transaction.Commit();
-        return result;
+        _transaction.Commit();
+        return GetTransactionResults();
     }
 
     ~ServiceStackTransaction()
     {
-        transaction.Dispose();
+        _transaction.Dispose();
     }
 }

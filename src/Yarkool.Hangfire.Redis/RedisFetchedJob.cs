@@ -81,19 +81,13 @@ namespace Yarkool.Hangfire.Redis
         private void RemoveFromFetchedListAsync(IRedisPipeline pipeline)
         {
             pipeline.LRem(_storage.GetRedisKey($"queue:{Queue}:dequeued"), -1, JobId);
-            pipeline.HDel(_storage.GetRedisKey($"job:{JobId}"), [
-                "Fetched",
-                "Checked"
-            ]);
+            pipeline.HDel(_storage.GetRedisKey($"job:{JobId}"), "Fetched", "Checked");
         }
 
         private void RemoveFromFetchedList(IRedisClient redisClient)
         {
             redisClient.LRem(_storage.GetRedisKey($"queue:{Queue}:dequeued"), -1, JobId);
-            redisClient.HDel(_storage.GetRedisKey($"job:{JobId}"), [
-                "Fetched",
-                "Checked"
-            ]);
+            redisClient.HDel(_storage.GetRedisKey($"job:{JobId}"), "Fetched", "Checked");
         }
     }
 }

@@ -7,11 +7,10 @@ namespace Yarkool.Hangfire.Redis.Example.Controllers;
 [Route("[controller]")]
 public class WeatherForecastController
 (
-    IBackgroundJobClient backgroundJobClient,
-    ILogger<WeatherForecastController> logger
+    IBackgroundJobClient backgroundJobClient
 ) : ControllerBase
 {
-    private static readonly string[] Summaries = new[]
+    private static readonly string[] Summaries =
     {
         "Freezing",
         "Bracing",
@@ -24,9 +23,6 @@ public class WeatherForecastController
         "Sweltering",
         "Scorching"
     };
-
-    private readonly IBackgroundJobClient _backgroundJobClient = backgroundJobClient;
-    private readonly ILogger<WeatherForecastController> _logger = logger;
 
     [HttpGet(Name = "GetWeatherForecast")]
     public IEnumerable<WeatherForecast> Get()
@@ -43,7 +39,7 @@ public class WeatherForecastController
     [HttpPost(Name = "Push")]
     public string Push()
     {
-        _backgroundJobClient.Enqueue(() => Console.WriteLine($"推送测试: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}"));
+        backgroundJobClient.Enqueue(() => Console.WriteLine($"推送测试: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}"));
         return "success";
     }
 }

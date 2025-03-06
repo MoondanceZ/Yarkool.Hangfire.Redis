@@ -1,16 +1,18 @@
 using System.Globalization;
-using FreeRedis;
 using Hangfire;
 using Microsoft.AspNetCore.Localization;
+using ServiceStack.Redis;
 using Yarkool.Hangfire.Redis.FreeRedis;
+using Yarkool.Hangfire.Redis.ServiceStack;
 using Yarkool.Hangfire.Redis.SharpRedis;
+using RedisClient = FreeRedis.RedisClient;
 
 namespace Yarkool.Hangfire.Redis.Example;
 
 public class Program
 {
     private const string redisConn = "127.0.0.1,port=6379";
-    private const string redisLibrary = "SharpRedis"; //FreeRedis, SharpRedis
+    private const string redisLibrary = "SharpRedis"; //FreeRedis, SharpRedis, ServiceStack
     // private static IRedisClient redisClient = default!;
 
     public static void Main(string[] args)
@@ -24,14 +26,19 @@ public class Program
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
-        IRedisClient redisClient = redisLibrary == "FreeRedis" ?
-            new FreeRedisClient(new RedisClient(redisConn)) :
-            new SharpRedisClient(global::SharpRedis.Redis.UseStandalone($"host={redisConn}"));
+        var redisClientDic = new Dictionary<string, Lazy<IRedisClient>>
+        {
+            ["FreeRedis"] = new(() => new FreeRedisClient(new RedisClient(redisConn))),
+            ["SharpRedis"] = new(() => new SharpRedisClient(global::SharpRedis.Redis.UseStandalone($"host={redisConn}"))),
+            ["ServiceStack"] = new(() => new ServiceStackClient(new RedisManagerPool(redisConn.Replace(",port", ":"))))
+        };
+
+        var redisClient = redisClientDic[redisLibrary].Value;
 
         var storage = new RedisStorage(redisClient, new RedisStorageOptions { Prefix = "sss:" });
 
         builder.Services.AddHangfire(o => o.UseStorage(storage));
-        builder.Services.AddHangfireServer((sp) =>
+        builder.Services.AddHangfireServer(sp =>
         {
             sp.Queues =
             [

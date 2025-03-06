@@ -2,7 +2,7 @@ using FreeRedis;
 
 namespace Yarkool.Hangfire.Redis.FreeRedis;
 
-public partial class FreeRedisCommand(RedisClient redisClient) : IRedisCommand
+public class FreeRedisCommand(RedisClient redisClient) : IRedisCommand
 {
     public long Publish(string channel, string message) => redisClient.Publish(channel, message);
 
@@ -246,10 +246,7 @@ public partial class FreeRedisCommand(RedisClient redisClient) : IRedisCommand
             end
         ";
 
-        var result = redisClient.Eval(luaScript, [key], [
-            value,
-            expiry.TotalSeconds.ToString()
-        ]);
+        var result = redisClient.Eval(luaScript, [key], value, expiry.TotalSeconds.ToString());
         return result?.ToString() == "1";
     }
 
@@ -264,7 +261,7 @@ public partial class FreeRedisCommand(RedisClient redisClient) : IRedisCommand
                 return 0
             end
         ";
-        var result = redisClient.Eval(luaScript, [key], [value]);
+        var result = redisClient.Eval(luaScript, [key], value);
         return result?.ToString() == "1";
     }
 

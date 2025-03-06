@@ -2,27 +2,29 @@ using ServiceStack.Redis;
 
 namespace Yarkool.Hangfire.Redis.ServiceStack;
 
-public partial class ServiceStackCommand : IRedisCommand
+public class ServiceStackCommand : IRedisCommand, IQueueCommand
 {
-    private readonly IRedisTransaction? _redisTransaction;
-    private readonly IRedisPipeline? _redisPipeline;
+    private readonly global::ServiceStack.Redis.IRedisTransaction? _redisTransaction;
+    private readonly global::ServiceStack.Redis.Pipeline.IRedisPipeline? _redisPipeline;
     private readonly IRedisClientsManager? _redisClientsManager;
+    private readonly List<object> pipelineResultList = [];
+    private readonly List<object> transactionResultList = [];
 
-    public ServiceStackCommand(IRedisClientsManager? redisClientsManager)
+    protected ServiceStackCommand(IRedisClientsManager? redisClientsManager)
     {
         _redisClientsManager = redisClientsManager;
     }
-    
-    public ServiceStackCommand(IRedisPipeline? redisPipeline)
+
+    protected ServiceStackCommand(global::ServiceStack.Redis.Pipeline.IRedisPipeline? redisPipeline)
     {
         _redisPipeline = redisPipeline;
     }
-    
-    public ServiceStackCommand(IRedisTransaction? redisTransaction)
+
+    protected ServiceStackCommand(global::ServiceStack.Redis.IRedisTransaction? redisTransaction)
     {
         _redisTransaction = redisTransaction;
     }
-    
+
     private void UseClient(Action<global::ServiceStack.Redis.IRedisClient> action)
     {
         if (_redisClientsManager != null)
@@ -34,6 +36,14 @@ public partial class ServiceStackCommand : IRedisCommand
         {
             _redisPipeline.QueueCommand(action);
         }
+        else if (_redisTransaction != null)
+        {
+            _redisTransaction.QueueCommand(action);
+        }
+        else
+        {
+            throw new HangFireRedisException("参数初始化异常");
+        }
     }
 
     private T UseClient<T>(Func<global::ServiceStack.Redis.IRedisClient, T> func)
@@ -43,18 +53,162 @@ public partial class ServiceStackCommand : IRedisCommand
             using var redisClient = _redisClientsManager.GetClient();
             return func.Invoke(redisClient);
         }
+
+        if (_redisPipeline != null)
+        {
+            if (typeof(T) == typeof(int))
+            {
+                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
+                _redisPipeline.QueueCommand(intFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
+                _redisPipeline.QueueCommand(longFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
+                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
+                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
+                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
+            }
+            else
+            {
+                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
+            }
+
+            return default!;
+        }
+
+        if (_redisTransaction != null)
+        {
+            if (typeof(T) == typeof(int))
+            {
+                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
+                _redisTransaction.QueueCommand(intFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
+                _redisTransaction.QueueCommand(longFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
+                _redisTransaction.QueueCommand(boolFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                var doubleFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
+                _redisTransaction.QueueCommand(doubleFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var stringFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
+                _redisTransaction.QueueCommand(stringFunc, s => transactionResultList.Add(s));
+            }
+            else
+            {
+                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
+            }
+
+            return default!;
+        }
+
+        throw new HangFireRedisException("参数初始化异常");
     }
 
-    private async Task<T> UseClientAsync<T>(Func<global::ServiceStack.Redis.IRedisClientAsync, Task<T>> func)
+    private async Task<T> UseClientAsync<T>(Func<IRedisClientAsync, Task<T>> func)
     {
         if (_redisClientsManager != null)
         {
-            await using var redisClient = await _redisClientsManager.GetClientAsync().ConfigureAwait(false);
+            await using var redisClient = await _redisClientsManager.GetClientAsync();
             return await func.Invoke(redisClient);
         }
+
+        if (_redisPipeline != null)
+        {
+            if (typeof(T) == typeof(int))
+            {
+                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
+                _redisPipeline.QueueCommand(intFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
+                _redisPipeline.QueueCommand(longFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
+                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                var doubleFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
+                _redisPipeline.QueueCommand(doubleFunc, s => pipelineResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var stringFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
+                _redisPipeline.QueueCommand(stringFunc, s => pipelineResultList.Add(s));
+            }
+            else
+            {
+                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
+            }
+
+            return default!;
+        }
+
+        if (_redisTransaction != null)
+        {
+            if (typeof(T) == typeof(int))
+            {
+                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
+                _redisTransaction.QueueCommand(intFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(long))
+            {
+                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
+                _redisTransaction.QueueCommand(longFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(bool))
+            {
+                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
+                _redisTransaction.QueueCommand(boolFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(double))
+            {
+                var doubleFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
+                _redisTransaction.QueueCommand(doubleFunc, s => transactionResultList.Add(s));
+            }
+            else if (typeof(T) == typeof(string))
+            {
+                var stringFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
+                _redisTransaction.QueueCommand(stringFunc, s => transactionResultList.Add(s));
+            }
+            else
+            {
+                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
+            }
+
+            return default!;
+        }
+
+        throw new HangFireRedisException("参数初始化异常");
     }
 
-    private async Task UseClientAsync(Action<global::ServiceStack.Redis.IRedisClientAsync> action)
+    private async Task UseClientAsync(Action<IRedisClientAsync> action)
     {
         if (_redisClientsManager != null)
         {
@@ -67,13 +221,13 @@ public partial class ServiceStackCommand : IRedisCommand
 
     public Task<long> PublishAsync(string channel, string message) => UseClientAsync(async x => await x.PublishMessageAsync(channel, message).ConfigureAwait(false));
 
-    public IDisposable? Subscribe(string key, Action<string, object> handler) => new RedisPubSubServer(redisClientsManager, key) { OnMessage = handler }.Start();
+    public IDisposable? Subscribe(string key, Action<string, object> handler) => new RedisPubSubServer(_redisClientsManager, key) { OnMessage = handler }.Start();
 
-    public void UnSubscribe(string key) => new RedisPubSubServer(redisClientsManager, key).Stop();
+    public void UnSubscribe(string key) => new RedisPubSubServer(_redisClientsManager, key).Stop();
 
     public string? Get(string key) => UseClient(x => x.GetValue(key));
 
-    public Task<string?> GetAsync(string key) => UseClientAsync(async x => await x.GetValueAsync(key).ConfigureAwait(false));
+    public Task<string?> GetAsync(string key) => UseClientAsync(async x => (string?)(await x.GetValueAsync(key).ConfigureAwait(false)));
 
     public string?[] MGet(params string[] keys) => UseClient(x => x.GetValues(keys.ToList()).ToArray());
 
@@ -158,7 +312,7 @@ public partial class ServiceStackCommand : IRedisCommand
             }
 
             await pipeline.FlushAsync();
-            return (long)data.Count;
+            return data.LongCount();
         });
 
     public long ZRem(string key, params string[] members) => UseClient(x => x.RemoveItemsFromSortedSet(key, members.ToList()));
@@ -221,7 +375,7 @@ public partial class ServiceStackCommand : IRedisCommand
         UseClientAsync(async x =>
         {
             await x.AddRangeToSetAsync(key, members.ToList()).ConfigureAwait(false);
-            return (long)members.Length;
+            return members.LongCount();
         });
 
     public long SRem(string key, string member) =>
@@ -269,7 +423,7 @@ public partial class ServiceStackCommand : IRedisCommand
         UseClientAsync(async x =>
         {
             await x.RemoveAllAsync(keys).ConfigureAwait(false);
-            return (long)keys.Length;
+            return keys.LongCount();
         });
 
     public long HSet(string key, string field, string value) =>
@@ -302,7 +456,7 @@ public partial class ServiceStackCommand : IRedisCommand
 
     public string? HGet(string key, string field) => UseClient(x => x.GetValueFromHash(key, field));
 
-    public Task<string?> HGetAsync(string key, string field) => UseClientAsync(async x => await x.GetValueFromHashAsync(key, field).ConfigureAwait(false));
+    public Task<string?> HGetAsync(string key, string field) => UseClientAsync(async x => (string?)(await x.GetValueFromHashAsync(key, field).ConfigureAwait(false)));
 
     public string?[]? HMGet(string key, params string[] fields)
     {
@@ -358,7 +512,7 @@ public partial class ServiceStackCommand : IRedisCommand
             }
 
             pipeline.Flush();
-            return fields.LongLength;
+            return fields.LongCount();
         });
 
     public Task<long> HDelAsync(string key, params string[] fields) =>
@@ -371,7 +525,7 @@ public partial class ServiceStackCommand : IRedisCommand
             }
 
             await pipeline.FlushAsync();
-            return fields.LongLength;
+            return fields.LongCount();
         });
 
     public bool HExists(string key, string field) => UseClient(x => x.HashContainsEntry(key, field));
@@ -382,33 +536,33 @@ public partial class ServiceStackCommand : IRedisCommand
         UseClient(x =>
         {
             x.AddRangeToList(key, elements.ToList());
-            return elements.LongLength;
+            return elements.LongCount();
         });
 
     public Task<long> RPushAsync(string key, params string[] elements) =>
         UseClientAsync(async x =>
         {
             await x.AddRangeToListAsync(key, elements.ToList()).ConfigureAwait(false);
-            return elements.LongLength;
+            return elements.LongCount();
         });
 
     public long LPush(string key, params string[] elements) =>
         UseClient(x =>
         {
             x.PrependRangeToList(key, elements.ToList());
-            return elements.LongLength;
+            return elements.LongCount();
         });
 
     public Task<long> LPushAsync(string key, params string[] elements) =>
         UseClientAsync(async x =>
         {
             await x.PrependRangeToListAsync(key, elements.ToList()).ConfigureAwait(false);
-            return elements.LongLength;
+            return elements.LongCount();
         });
 
     public string? RPopLPush(string source, string destination) => UseClient(x => x.PopAndPushItemBetweenLists(source, destination));
 
-    public Task<string?> RPopLPushAsync(string source, string destination) => UseClientAsync(async x => await x.PopAndPushItemBetweenListsAsync(source, destination).ConfigureAwait(false));
+    public Task<string?> RPopLPushAsync(string source, string destination) => UseClientAsync(async x => (string?)(await x.PopAndPushItemBetweenListsAsync(source, destination).ConfigureAwait(false)));
 
     public long LRem(string key, long count, string element) => UseClient(x => x.RemoveItemFromList(key, element, (int)count));
 
@@ -428,14 +582,14 @@ public partial class ServiceStackCommand : IRedisCommand
 
     public string? LIndex(string key, long index) => UseClient(x => x.GetItemFromList(key, (int)index));
 
-    public Task<string?> LIndexAsync(string key, long index) => UseClientAsync(async x => await x.GetItemFromListAsync(key, (int)index).ConfigureAwait(false));
+    public Task<string?> LIndexAsync(string key, long index) => UseClientAsync(async x => (string?)(await x.GetItemFromListAsync(key, (int)index).ConfigureAwait(false)));
 
     public string? RPop(string key) => UseClient(x => x.RemoveEndFromList(key));
 
-    public Task<string?> RPopAsync(string key) => UseClientAsync(async x => await x.RemoveEndFromListAsync(key).ConfigureAwait(false));
+    public Task<string?> RPopAsync(string key) => UseClientAsync(async x => (string?)(await x.RemoveEndFromListAsync(key).ConfigureAwait(false)));
     public string? LPop(string key) => UseClient(x => x.RemoveStartFromList(key));
 
-    public Task<string?> LPopAsync(string key) => UseClientAsync(async x => await x.RemoveStartFromListAsync(key).ConfigureAwait(false));
+    public Task<string?> LPopAsync(string key) => UseClientAsync(async x => (string?)(await x.RemoveStartFromListAsync(key).ConfigureAwait(false)));
 
     public long IncrBy(string key, long increment) => UseClient(x => x.IncrementValueBy(key, increment));
     public Task<long> IncrByAsync(string key, long increment) => UseClientAsync(async x => await x.IncrementValueByAsync(key, increment).ConfigureAwait(false));
@@ -507,4 +661,8 @@ public partial class ServiceStackCommand : IRedisCommand
             throw new Exception($"get time error: {result}");
         });
     }
+
+    public object?[]? GetPipelineResults() => pipelineResultList.ToArray();
+
+    public object?[]? GetTransactionResults() => transactionResultList.ToArray();
 }

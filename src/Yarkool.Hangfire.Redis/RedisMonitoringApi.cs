@@ -12,7 +12,7 @@ namespace Yarkool.Hangfire.Redis
         private readonly RedisStorage _storage;
         private readonly IRedisClient _redisClient;
 
-        private static readonly string[] sourceArray = new[]
+        private static readonly string[] sourceArray =
         {
             "StartedAt",
             "ServerName",
@@ -125,19 +125,9 @@ namespace Yarkool.Hangfire.Redis
                 var jobInfo = scheduledJob.Element.Split(':');
                 var jobId = scheduledJob.Element;
                 jobIds.Add(scheduledJob.Element, jobId);
-                tasks[i] = _redisClient.HMGetAsync(_storage.GetRedisKey($"job:{jobId}"),
-                [
-                    "Type",
-                    "Method",
-                    "ParameterTypes",
-                    "Arguments"
-                ]).ContinueWith(x => jobs.TryAdd(scheduledJob.Element, x.Result!.ToList()!));
+                tasks[i] = _redisClient.HMGetAsync(_storage.GetRedisKey($"job:{jobId}"), "Type", "Method", "ParameterTypes", "Arguments").ContinueWith(x => jobs.TryAdd(scheduledJob.Element, x.Result!.ToList()!));
                 i++;
-                tasks[i] = _redisClient.HMGetAsync(_storage.GetRedisKey($"job:{jobId}:state"),
-                [
-                    "State",
-                    "ScheduledAt"
-                ]).ContinueWith(x => states.TryAdd(scheduledJob.Element, x.Result!.ToList()!));
+                tasks[i] = _redisClient.HMGetAsync(_storage.GetRedisKey($"job:{jobId}:state"), "State", "ScheduledAt").ContinueWith(x => states.TryAdd(scheduledJob.Element, x.Result!.ToList()!));
                 i++;
             }
 
@@ -166,7 +156,7 @@ namespace Yarkool.Hangfire.Redis
         {
             var serverNames = _redisClient
                 .SMembers(_storage.GetRedisKey("servers"))
-                .Select(x => (string)x)
+                .Select(x => x)
                 .ToList();
 
             if (serverNames.Count == 0)
@@ -180,11 +170,7 @@ namespace Yarkool.Hangfire.Redis
             {
                 var queue = _redisClient.LRange(_storage.GetRedisKey($"server:{serverName}:queues"), 0, -1).ToList();
 
-                var server = _redisClient.HMGet(_storage.GetRedisKey($"server:{serverName}"), [
-                    "WorkerCount",
-                    "StartedAt",
-                    "Heartbeat"
-                ])?.ToList() ?? [];
+                var server = _redisClient.HMGet(_storage.GetRedisKey($"server:{serverName}"), "WorkerCount", "StartedAt", "Heartbeat")?.ToList() ?? [];
                 if (server.Count == 0)
                     continue; // skip removed server
 
@@ -253,7 +239,7 @@ namespace Yarkool.Hangfire.Redis
                     Job = job,
                     Result = state[4],
                     SucceededAt = JobHelper.DeserializeNullableDateTime(state[0]),
-                    TotalDuration = state[1] != null! && state[2] != null! ? (long?)long.Parse(state[1]) + (long?)long.Parse(state[2]) : null,
+                    TotalDuration = state[1] != null! && state[2] != null! ? long.Parse(state[1]) + (long?)long.Parse(state[2]) : null,
                     InSucceededState = SucceededState.StateName.Equals(state[3], StringComparison.OrdinalIgnoreCase)
                 });
         }
@@ -284,7 +270,7 @@ namespace Yarkool.Hangfire.Redis
         {
             var queues = _redisClient
                 .SMembers(_storage.GetRedisKey("queues"))
-                .Select(x => (string)x)
+                .Select(x => x)
                 .ToList();
 
             var result = new List<QueueWithTopEnqueuedJobsDto>(queues.Count);
@@ -414,7 +400,7 @@ namespace Yarkool.Hangfire.Redis
                         { "NextState", stateData[3] },
                         { "ParentId", stateData[4] }
                     },
-                    LoadException = new JobLoadException($"Error deserializing job", loadException),
+                    LoadException = new JobLoadException("Error deserializing job", loadException),
                     ParentStateName = _storage.GetConnection().GetStateData(stateData[4]).Name
                 });
         }
@@ -489,7 +475,7 @@ namespace Yarkool.Hangfire.Redis
             return new JobDetailsDto
             {
                 Job = TryToGetJob(job["Type"], job["Method"], job["ParameterTypes"], job["Arguments"], out var loadException),
-                CreatedAt = job.TryGetValue("CreatedAt", out var value) ? JobHelper.DeserializeDateTime(value) : (DateTime?)null,
+                CreatedAt = job.TryGetValue("CreatedAt", out var value) ? JobHelper.DeserializeDateTime(value) : null,
                 Properties = job.Where(x => !hiddenProperties.Contains(x.Key)).ToDictionary(x => x.Key, x => x.Value),
                 History = stateHistory
             };
@@ -578,7 +564,7 @@ namespace Yarkool.Hangfire.Redis
             var states = new Dictionary<string, Task<string[]>>(jobIds.Length, StringComparer.OrdinalIgnoreCase);
             var histories = new Dictionary<string, Task<string>>(jobIds.Length, StringComparer.OrdinalIgnoreCase);
 
-            properties ??= new string[0];
+            properties ??= [];
 
             var extendedProperties = properties
                 .Concat([

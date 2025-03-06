@@ -9,7 +9,7 @@ namespace Yarkool.Hangfire.Redis.Test
 
         public RedisConnectionFacts()
         {
-            var options = new RedisStorageOptions() { };
+            var options = new RedisStorageOptions();
             _storage = new RedisStorage(RedisUtils.CreateClient(), options);
         }
 

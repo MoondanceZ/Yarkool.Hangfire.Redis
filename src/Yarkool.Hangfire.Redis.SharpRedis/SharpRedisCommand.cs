@@ -2,7 +2,7 @@ using SharpRedis.Provider.Standard;
 
 namespace Yarkool.Hangfire.Redis.SharpRedis;
 
-public partial class SharpRedisCommand(BaseRedis redisClient) : IRedisCommand
+public class SharpRedisCommand(BaseRedis redisClient) : IRedisCommand
 {
     public long Publish(string channel, string message) => redisClient.PubSub.Publish(channel, message);
 

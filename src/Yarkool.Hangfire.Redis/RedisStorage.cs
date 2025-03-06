@@ -77,7 +77,7 @@ namespace Yarkool.Hangfire.Redis
 
         public static DashboardMetric GetDashboardMetricFromRedisInfo(string title, string key)
         {
-            return new DashboardMetric("redis:" + key, title, (razorPage) => { return new Metric(""); });
+            return new DashboardMetric("redis:" + key, title, razorPage => { return new Metric(""); });
         }
 
         public override IEnumerable<IStateHandler> GetStateHandlers()

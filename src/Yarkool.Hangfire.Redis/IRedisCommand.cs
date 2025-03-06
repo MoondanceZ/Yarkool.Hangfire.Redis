@@ -1,6 +1,6 @@
 ﻿namespace Yarkool.Hangfire.Redis;
 
-public partial interface IRedisCommand
+public interface IRedisCommand
 {
     long Publish(string channel, string message);
     Task<long> PublishAsync(string channel, string message);

@@ -1,5 +1,3 @@
-using ServiceStack.Redis;
-
 namespace Yarkool.Hangfire.Redis.ServiceStack;
 
 internal class ServiceStackPipeline
@@ -7,24 +5,28 @@ internal class ServiceStackPipeline
     global::ServiceStack.Redis.Pipeline.IRedisPipeline redisPipeline
 ) : ServiceStackCommand(redisPipeline), IRedisPipeline
 {
-    private List<string> resultList = new List<string>();
     private bool _disposed;
+    private readonly global::ServiceStack.Redis.Pipeline.IRedisPipeline _redisPipeline1 = redisPipeline;
 
     public void Dispose()
     {
         if (_disposed)
             return;
 
-        redisPipeline.Dispose();
+        _redisPipeline1.Dispose();
         _disposed = true;
 
         GC.SuppressFinalize(this);
     }
 
-    public object?[]? Execute() => redisPipeline.Flush();
+    public object?[]? Execute()
+    {
+        _redisPipeline1.Flush();
+        return GetPipelineResults();
+    }
 
     ~ServiceStackPipeline()
     {
-        redisPipeline.Dispose();
+        _redisPipeline1.Dispose();
     }
 }

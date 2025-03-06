@@ -35,7 +35,7 @@ namespace Yarkool.Hangfire.Redis
         private readonly IRedisClient _redisClient;
         private readonly string _key;
         private readonly bool _holdsLock;
-        private volatile bool _isDisposed = false;
+        private volatile bool _isDisposed;
         private readonly Timer? _slidingExpirationTimer;
 
         private RedisLock([NotNull] IRedisClient redisClient, string key, bool holdsLock, TimeSpan holdDuration)
@@ -50,7 +50,7 @@ namespace Yarkool.Hangfire.Redis
 
                 // start sliding expiration timer at half timeout intervals
                 var halfLockHoldDuration = TimeSpan.FromTicks(holdDuration.Ticks / 2);
-                var state = new StateBag()
+                var state = new StateBag
                 {
                     PerformingContext = HangfireSubscriber.Value,
                     TimeSpan = holdDuration

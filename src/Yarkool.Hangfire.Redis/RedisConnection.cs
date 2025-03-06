@@ -67,7 +67,7 @@ namespace Yarkool.Hangfire.Redis
             var results = new ConcurrentDictionary<string, long>();
             foreach (var key in keys)
             {
-                tasks[i] = _redisClient.ZCountAsync(_storage.GetRedisKey(key), max: limit).ContinueWith((Task<long> x) => results.TryAdd(_storage.GetRedisKey(key), x.Result));
+                tasks[i] = _redisClient.ZCountAsync(_storage.GetRedisKey(key), max: limit).ContinueWith(x => results.TryAdd(_storage.GetRedisKey(key), x.Result));
             }
 
             Task.WaitAll(tasks);

@@ -15,7 +15,7 @@ namespace Yarkool.Hangfire.Redis.Test
 
         public ExpiredJobsWatcherFacts()
         {
-            var options = new RedisStorageOptions() { };
+            var options = new RedisStorageOptions();
             _storage = new RedisStorage(RedisUtils.CreateClient(), options);
             _cts = new CancellationTokenSource();
             _cts.Cancel();

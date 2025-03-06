@@ -14,7 +14,7 @@ namespace Yarkool.Hangfire.Redis.Test
         {
             _cts = new CancellationTokenSource();
 
-            var options = new RedisStorageOptions() { };
+            var options = new RedisStorageOptions();
             _storage = new RedisStorage(RedisUtils.CreateClient(), options);
         }
 
