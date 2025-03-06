@@ -19,6 +19,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F5300C8C-A
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{2DFDDC47-A0B3-4827-B614-F8900B123426}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Yarkool.Hangfire.Redis.ServiceStack", "Yarkool.Hangfire.Redis.ServiceStack\Yarkool.Hangfire.Redis.ServiceStack.csproj", "{E8976010-369A-4A49-BE50-949BF946AA51}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8976010-369A-4A49-BE50-949BF946AA51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8976010-369A-4A49-BE50-949BF946AA51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8976010-369A-4A49-BE50-949BF946AA51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8976010-369A-4A49-BE50-949BF946AA51}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -58,5 +64,6 @@ Global
 		{53139E81-ED41-453F-893F-7D8B2006BAED} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
 		{386DB1AE-D0ED-49EB-B556-F3ECA92C54EF} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
 		{0D9DBC49-9E7E-48C1-AC13-32B4C6F78CD0} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
+		{E8976010-369A-4A49-BE50-949BF946AA51} = {2DFDDC47-A0B3-4827-B614-F8900B123426}
 	EndGlobalSection
 EndGlobal
