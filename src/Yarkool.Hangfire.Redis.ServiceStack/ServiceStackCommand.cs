@@ -42,7 +42,7 @@ public class ServiceStackCommand : IRedisCommand, IQueueCommand
         }
         else
         {
-            throw new HangFireRedisException("参数初始化异常");
+            throw new ArgumentException("Constructor parameter error");
         }
     }
 
@@ -56,75 +56,17 @@ public class ServiceStackCommand : IRedisCommand, IQueueCommand
 
         if (_redisPipeline != null)
         {
-            if (typeof(T) == typeof(int))
-            {
-                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
-                _redisPipeline.QueueCommand(intFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(long))
-            {
-                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
-                _redisPipeline.QueueCommand(longFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
-                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
-                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(string))
-            {
-                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
-                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
-            }
-            else
-            {
-                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
-            }
-
+            _redisPipeline.QueueCommand(func, pipelineResultList);
             return default!;
         }
 
         if (_redisTransaction != null)
         {
-            if (typeof(T) == typeof(int))
-            {
-                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
-                _redisTransaction.QueueCommand(intFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(long))
-            {
-                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
-                _redisTransaction.QueueCommand(longFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
-                _redisTransaction.QueueCommand(boolFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                var doubleFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
-                _redisTransaction.QueueCommand(doubleFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(string))
-            {
-                var stringFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
-                _redisTransaction.QueueCommand(stringFunc, s => transactionResultList.Add(s));
-            }
-            else
-            {
-                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
-            }
-
+            _redisTransaction.QueueCommand(func, transactionResultList);
             return default!;
         }
 
-        throw new HangFireRedisException("参数初始化异常");
+        throw new ArgumentException("Constructor parameter error");
     }
 
     private async Task<T> UseClientAsync<T>(Func<IRedisClientAsync, Task<T>> func)
@@ -137,75 +79,15 @@ public class ServiceStackCommand : IRedisCommand, IQueueCommand
 
         if (_redisPipeline != null)
         {
-            if (typeof(T) == typeof(int))
-            {
-                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
-                _redisPipeline.QueueCommand(intFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(long))
-            {
-                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
-                _redisPipeline.QueueCommand(longFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
-                _redisPipeline.QueueCommand(boolFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                var doubleFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
-                _redisPipeline.QueueCommand(doubleFunc, s => pipelineResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(string))
-            {
-                var stringFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
-                _redisPipeline.QueueCommand(stringFunc, s => pipelineResultList.Add(s));
-            }
-            else
-            {
-                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
-            }
-
-            return default!;
+            throw new NotSupportedException("Not support pipeline asynchronous call");
         }
 
         if (_redisTransaction != null)
         {
-            if (typeof(T) == typeof(int))
-            {
-                var intFunc = func as Func<global::ServiceStack.Redis.IRedisClient, int>;
-                _redisTransaction.QueueCommand(intFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(long))
-            {
-                var longFunc = func as Func<global::ServiceStack.Redis.IRedisClient, long>;
-                _redisTransaction.QueueCommand(longFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(bool))
-            {
-                var boolFunc = func as Func<global::ServiceStack.Redis.IRedisClient, bool>;
-                _redisTransaction.QueueCommand(boolFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(double))
-            {
-                var doubleFunc = func as Func<global::ServiceStack.Redis.IRedisClient, double>;
-                _redisTransaction.QueueCommand(doubleFunc, s => transactionResultList.Add(s));
-            }
-            else if (typeof(T) == typeof(string))
-            {
-                var stringFunc = func as Func<global::ServiceStack.Redis.IRedisClient, string>;
-                _redisTransaction.QueueCommand(stringFunc, s => transactionResultList.Add(s));
-            }
-            else
-            {
-                throw new NotSupportedException($"不支持的返回类型: {typeof(T)}");
-            }
-
-            return default!;
+            throw new NotSupportedException("Not support transaction asynchronous call");
         }
 
-        throw new HangFireRedisException("参数初始化异常");
+        throw new ArgumentException("Constructor parameter error");
     }
 
     private async Task UseClientAsync(Action<IRedisClientAsync> action)

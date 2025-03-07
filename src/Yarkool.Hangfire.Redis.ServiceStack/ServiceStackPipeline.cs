@@ -6,14 +6,14 @@ internal class ServiceStackPipeline
 ) : ServiceStackCommand(redisPipeline), IRedisPipeline
 {
     private bool _disposed;
-    private readonly global::ServiceStack.Redis.Pipeline.IRedisPipeline _redisPipeline1 = redisPipeline;
+    private readonly global::ServiceStack.Redis.Pipeline.IRedisPipeline _redisPipeline = redisPipeline;
 
     public void Dispose()
     {
         if (_disposed)
             return;
 
-        _redisPipeline1.Dispose();
+        _redisPipeline.Dispose();
         _disposed = true;
 
         GC.SuppressFinalize(this);
@@ -21,12 +21,12 @@ internal class ServiceStackPipeline
 
     public object?[]? Execute()
     {
-        _redisPipeline1.Flush();
+        _redisPipeline.Flush();
         return GetPipelineResults();
     }
 
     ~ServiceStackPipeline()
     {
-        _redisPipeline1.Dispose();
+        _redisPipeline.Dispose();
     }
 }

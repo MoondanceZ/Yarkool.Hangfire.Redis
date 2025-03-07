@@ -12,7 +12,7 @@ namespace Yarkool.Hangfire.Redis.Example;
 public class Program
 {
     private const string redisConn = "127.0.0.1,port=6379";
-    private const string redisLibrary = "SharpRedis"; //FreeRedis, SharpRedis, ServiceStack
+    private const string redisLibrary = "ServiceStack"; //FreeRedis, SharpRedis, ServiceStack
     // private static IRedisClient redisClient = default!;
 
     public static void Main(string[] args)
@@ -30,7 +30,7 @@ public class Program
         {
             ["FreeRedis"] = new(() => new FreeRedisClient(new RedisClient(redisConn))),
             ["SharpRedis"] = new(() => new SharpRedisClient(global::SharpRedis.Redis.UseStandalone($"host={redisConn}"))),
-            ["ServiceStack"] = new(() => new ServiceStackClient(new RedisManagerPool(redisConn.Replace(",port", ":"))))
+            ["ServiceStack"] = new(() => new ServiceStackClient(new RedisManagerPool(redisConn.Replace(",port=", ":"))))
         };
 
         var redisClient = redisClientDic[redisLibrary].Value;
