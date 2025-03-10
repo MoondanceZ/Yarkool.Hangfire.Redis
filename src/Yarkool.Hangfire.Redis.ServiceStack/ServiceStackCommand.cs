@@ -239,7 +239,11 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(x => x.RemoveItemsFromSortedSet(key, members.ToList()), s => _commandResults.Add(s));
+            foreach (var member in members)
+            {
+                RedisQueueableOperation.QueueCommand(x => x.RemoveItemFromSortedSet(key, member), () => _commandResults.Add(1));
+            }
+
             return 0;
         }
 
@@ -250,7 +254,11 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(x => x.RemoveItemsFromSortedSet(key, members.ToList()), s => _commandResults.Add(s));
+            foreach (var member in members)
+            {
+                RedisQueueableOperation.QueueCommand(x => x.RemoveItemFromSortedSet(key, member), () => _commandResults.Add(1));
+            }
+
             return 0;
         }
 
@@ -456,7 +464,11 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(x => x.AddRangeToSet(key, members.ToList()), () => _commandResults.Add(1));
+            foreach (var member in members)
+            {
+                RedisQueueableOperation.QueueCommand(x => x.AddItemToSet(key, member), () => _commandResults.Add(1));
+            }
+
             return 0;
         }
 
@@ -468,7 +480,11 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(x => x.AddRangeToSet(key, members.ToList()), () => _commandResults.Add(1));
+            foreach (var member in members)
+            {
+                RedisQueueableOperation.QueueCommand(x => x.AddItemToSet(key, member), () => _commandResults.Add(1));
+            }
+
             return 0;
         }
 
@@ -857,7 +873,10 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(s => s.AddRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+            foreach (var element in elements)
+            {
+                RedisQueueableOperation.QueueCommand(s => s.AddItemToList(key, element), () => _commandResults.Add(1));
+            }
 
             return 0;
         }
@@ -870,7 +889,10 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(s => s.AddRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+            foreach (var element in elements)
+            {
+                RedisQueueableOperation.QueueCommand(s => s.AddItemToList(key, element), () => _commandResults.Add(1));
+            }
 
             return 0;
         }
@@ -883,7 +905,10 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(s => s.PrependRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+            foreach (var element in elements)
+            {
+                RedisQueueableOperation.QueueCommand(s => s.PrependItemToList(key, element), () => _commandResults.Add(1));
+            }
 
             return 0;
         }
@@ -896,7 +921,10 @@ public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDispos
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(s => s.PrependRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+            foreach (var element in elements)
+            {
+                RedisQueueableOperation.QueueCommand(s => s.PrependItemToList(key, element), () => _commandResults.Add(1));
+            }
 
             return 0;
         }
