@@ -1,8 +1,12 @@
 # Yarkool.Hangfire.Redis
-Hangfire 的 Redis 实现, 支持 `FreeRedis` 和 `SharpRedis`
+
+Hangfire 的 Redis 实现, 支持 `FreeRedis`, `SharpRedis`, `ServiceStack.Redis`
 
 ## 教程
-创建 `Storage`, 如果使用 `FreeRedis` 则引入 `Yarkool.Hangfire.Redis.FreeRedis`, 使用 `SharpRedis` 则引入 `Yarkool.Hangfire.Redis.SharpRedis`
+
+创建 `Storage`, 如果使用 `FreeRedis` 则引入 `Yarkool.Hangfire.Redis.FreeRedis`, 使用 `SharpRedis` 则引入
+`Yarkool.Hangfire.Redis.SharpRedis`, 使用 `ServiceStack.Redis` 则引入
+`Yarkool.Hangfire.Redis.ServiceStack`
 
 ```csharp
 // Redis 链接字符串
@@ -13,6 +17,9 @@ var redisClient = new FreeRedisClient(new RedisClient(redisConn));
 
 // SharpRedis
 var redisClient = new SharpRedisClient(global::SharpRedis.Redis.UseStandalone($"host={redisConn}"));
+
+// ServiceStack.Redis, 该库收费, 使用前请提前注册密钥!!!
+var redisClient = new ServiceStackClient(new RedisManagerPool(redisConn.Replace(",port", ":")));
 
 // 创建 Storage
 var storage = new RedisStorage(redisClient, new RedisStorageOptions { Prefix = "hangfire:" });
