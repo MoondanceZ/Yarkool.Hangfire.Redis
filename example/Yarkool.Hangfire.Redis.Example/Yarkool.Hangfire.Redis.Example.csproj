@@ -14,6 +14,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\src\Yarkool.Hangfire.Redis.FreeRedis\Yarkool.Hangfire.Redis.FreeRedis.csproj"/>
+        <ProjectReference Include="..\..\src\Yarkool.Hangfire.Redis.ServiceStack\Yarkool.Hangfire.Redis.ServiceStack.csproj" />
         <ProjectReference Include="..\..\src\Yarkool.Hangfire.Redis.SharpRedis\Yarkool.Hangfire.Redis.SharpRedis.csproj"/>
         <ProjectReference Include="..\..\src\Yarkool.Hangfire.Redis\Yarkool.Hangfire.Redis.csproj"/>
     </ItemGroup>

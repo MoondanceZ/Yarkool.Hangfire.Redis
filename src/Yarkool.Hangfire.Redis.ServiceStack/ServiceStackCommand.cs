@@ -3,7 +3,7 @@ using ServiceStack.Redis.Pipeline;
 
 namespace Yarkool.Hangfire.Redis.ServiceStack;
 
-public partial class ServiceStackCommand : IRedisCommand, IDisposable
+public partial class ServiceStackCommand : IRedisCommand, IQueueCommand, IDisposable
 {
     private readonly global::ServiceStack.Redis.Pipeline.IRedisPipeline? _redisPipeline;
     private readonly global::ServiceStack.Redis.IRedisTransaction? _redisTransaction;
@@ -11,7 +11,7 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
     private global::ServiceStack.Redis.IRedisClientAsync? _redisClientAsync;
     private readonly IRedisClientsManager _redisClientsManager;
 
-    private List<object> _commandResults;
+    private readonly List<object> _commandResults = new List<object>();
 
     public ServiceStackCommand(IRedisClientsManager redisClientsManager)
     {
@@ -504,7 +504,7 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(x => x.GetAllItemsFromSet(key), s => _commandResults.Add(s.ToArray()));
+            RedisQueueableOperation.QueueCommand(x => x.GetAllItemsFromSet(key), s => _commandResults.Add(s?.ToArray() ?? []));
             return [];
         }
 
@@ -515,7 +515,7 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
     {
         if (RedisQueueableOperation != null)
         {
-            RedisQueueableOperation.QueueCommand(x => x.GetAllItemsFromSet(key), s => _commandResults.Add(s.ToArray()));
+            RedisQueueableOperation.QueueCommand(x => x.GetAllItemsFromSet(key), s => _commandResults.Add(s?.ToArray() ?? []));
             return [];
         }
 
@@ -705,7 +705,7 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
             });
             return [];
         }
-        
+
         var result = RedisClient.GetValuesFromHash(key, fields) ?? [];
         var resultCount = result.Count;
         if (resultCount < fields.Length)
@@ -721,7 +721,24 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
 
     public async Task<string?[]?> HMGetAsync(string key, params string[] fields)
     {
-        #pragma warning disable CS8619
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(x => x.GetValuesFromHash(key, fields), s =>
+            {
+                var resultCount = s.Count;
+                if (resultCount < fields.Length)
+                {
+                    for (var i = 0; i < fields.Length - resultCount; i++)
+                    {
+                        s.Add(null);
+                    }
+                }
+
+                _commandResults.Add(s);
+            });
+            return [];
+        }
+
         var result = await RedisClientAsync.GetValuesFromHashAsync(key, fields).ConfigureAwait(false) ?? [];
         var resultCount = result.Count;
         if (resultCount < fields.Length)
@@ -737,21 +754,49 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
 
     public Dictionary<string, string> HGetAll(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(x => x.GetAllEntriesFromHash(key), s => _commandResults.Add(s));
+            return [];
+        }
+
         return RedisClient.GetAllEntriesFromHash(key);
     }
 
     public long HLen(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(x => x.GetHashCount(key), s => _commandResults.Add(s));
+            return 0;
+        }
+
         return RedisClient.GetHashCount(key);
     }
 
     public async Task<long> HLenAsync(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(x => x.GetHashCount(key), s => _commandResults.Add(s));
+            return 0;
+        }
+
         return await RedisClientAsync.GetHashCountAsync(key).ConfigureAwait(false);
     }
 
     public long HDel(string key, params string[] fields)
     {
+        if (RedisQueueableOperation != null)
+        {
+            foreach (var field in fields)
+            {
+                RedisQueueableOperation.QueueCommand(s => s.RemoveEntryFromHash(key, field), s => _commandResults.Add(s));
+            }
+
+            return 0;
+        }
+
         var pipeline = RedisClient.CreatePipeline();
         foreach (var field in fields)
         {
@@ -764,6 +809,16 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
 
     public async Task<long> HDelAsync(string key, params string[] fields)
     {
+        if (RedisQueueableOperation != null)
+        {
+            foreach (var field in fields)
+            {
+                RedisQueueableOperation.QueueCommand(s => s.RemoveEntryFromHash(key, field), s => _commandResults.Add(s));
+            }
+
+            return 0;
+        }
+
         var pipeline = RedisClientAsync.CreatePipeline();
         foreach (var field in fields)
         {
@@ -776,125 +831,293 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
 
     public bool HExists(string key, string field)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.HashContainsEntry(key, field), s => _commandResults.Add(s));
+
+            return false;
+        }
+
         return RedisClient.HashContainsEntry(key, field);
     }
 
     public async Task<bool> HExistsAsync(string key, string field)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.HashContainsEntry(key, field), s => _commandResults.Add(s));
+
+            return false;
+        }
+
         return await RedisClientAsync.HashContainsEntryAsync(key, field).ConfigureAwait(false);
     }
 
     public long RPush(string key, params string[] elements)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.AddRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+
+            return 0;
+        }
+
         RedisClient.AddRangeToList(key, elements.ToList());
         return elements.LongLength;
     }
 
     public async Task<long> RPushAsync(string key, params string[] elements)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.AddRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+
+            return 0;
+        }
+
         await RedisClientAsync.AddRangeToListAsync(key, elements.ToList()).ConfigureAwait(false);
         return elements.LongLength;
     }
 
     public long LPush(string key, params string[] elements)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.PrependRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+
+            return 0;
+        }
+
         RedisClient.PrependRangeToList(key, elements.ToList());
         return elements.LongLength;
     }
 
     public async Task<long> LPushAsync(string key, params string[] elements)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.PrependRangeToList(key, elements.ToList()), () => _commandResults.Add(elements.LongLength));
+
+            return 0;
+        }
+
         await RedisClientAsync.PrependRangeToListAsync(key, elements.ToList()).ConfigureAwait(false);
         return elements.LongLength;
     }
 
     public string? RPopLPush(string source, string destination)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.PopAndPushItemBetweenLists(source, destination), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return RedisClient.PopAndPushItemBetweenLists(source, destination);
     }
 
     public async Task<string?> RPopLPushAsync(string source, string destination)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.PopAndPushItemBetweenLists(source, destination), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return await RedisClientAsync.PopAndPushItemBetweenListsAsync(source, destination).ConfigureAwait(false);
     }
 
     public long LRem(string key, long count, string element)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.RemoveItemFromList(key, element, (int)count), s => _commandResults.Add(s));
+
+            return 0;
+        }
+
         return RedisClient.RemoveItemFromList(key, element, (int)count);
     }
 
     public async Task<long> LRemAsync(string key, long count, string element)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.RemoveItemFromList(key, element, (int)count), s => _commandResults.Add(s));
+
+            return 0;
+        }
+
         return await RedisClientAsync.RemoveItemFromListAsync(key, element, (int)count).ConfigureAwait(false);
     }
 
     public void LTrim(string key, long start, long stop)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.TrimList(key, (int)start, (int)stop), () => _commandResults.Add(true));
+
+            return;
+        }
+
         RedisClient.TrimList(key, (int)start, (int)stop);
     }
 
     public async Task LTrimAsync(string key, long start, long stop)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.TrimList(key, (int)start, (int)stop), () => _commandResults.Add(true));
+
+            return;
+        }
+
         await RedisClientAsync.TrimListAsync(key, (int)start, (int)stop).ConfigureAwait(false);
     }
 
     public string[] LRange(string key, long start, long stop)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.GetRangeFromList(key, (int)start, (int)stop), s => _commandResults.Add(s ?? []));
+
+            return [];
+        }
+
         return RedisClient.GetRangeFromList(key, (int)start, (int)stop)?.ToArray() ?? [];
     }
 
     public async Task<string[]> LRangeAsync(string key, long start, long stop)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.GetRangeFromList(key, (int)start, (int)stop), s => _commandResults.Add(s ?? []));
+
+            return [];
+        }
+
         return (await RedisClientAsync.GetRangeFromListAsync(key, (int)start, (int)stop).ConfigureAwait(false))?.ToArray() ?? [];
     }
 
     public long LLen(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.GetListCount(key), s => _commandResults.Add(s));
+
+            return 0;
+        }
+
         return RedisClient.GetListCount(key);
     }
 
     public async Task<long> LLenAsync(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.GetListCount(key), s => _commandResults.Add(s));
+
+            return 0;
+        }
+
         return await RedisClientAsync.GetListCountAsync(key).ConfigureAwait(false);
     }
 
     public string? LIndex(string key, long index)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.GetItemFromList(key, (int)index), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return RedisClient.GetItemFromList(key, (int)index);
     }
 
     public async Task<string?> LIndexAsync(string key, long index)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.GetItemFromList(key, (int)index), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return await RedisClientAsync.GetItemFromListAsync(key, (int)index).ConfigureAwait(false);
     }
 
     public string? RPop(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.RemoveEndFromList(key), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return RedisClient.RemoveEndFromList(key);
     }
 
     public async Task<string?> RPopAsync(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.RemoveEndFromList(key), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return await RedisClientAsync.RemoveEndFromListAsync(key).ConfigureAwait(false);
     }
 
     public string? LPop(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.RemoveStartFromList(key), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return RedisClient.RemoveStartFromList(key);
     }
 
     public async Task<string?> LPopAsync(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.RemoveStartFromList(key), s => _commandResults.Add(s));
+
+            return null;
+        }
+
         return await RedisClientAsync.RemoveStartFromListAsync(key).ConfigureAwait(false);
     }
 
     public long IncrBy(string key, long increment)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.IncrementValueBy(key, increment), s => _commandResults.Add(s));
+
+            return 0;
+        }
+
         return RedisClient.IncrementValueBy(key, increment);
     }
 
     public async Task<long> IncrByAsync(string key, long increment)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.IncrementValueBy(key, increment), s => _commandResults.Add(s));
+
+            return 0;
+        }
+
         return await RedisClientAsync.IncrementValueByAsync(key, increment).ConfigureAwait(false);
     }
 
@@ -945,31 +1168,31 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
 
     public bool Exists(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.ContainsKey(key), s => _commandResults.Add(s));
+
+            return false;
+        }
+
         return RedisClient.ContainsKey(key);
     }
 
     public async Task<bool> ExistsAsync(string key)
     {
+        if (RedisQueueableOperation != null)
+        {
+            RedisQueueableOperation.QueueCommand(s => s.ContainsKey(key), s => _commandResults.Add(s));
+
+            return false;
+        }
+
         return await RedisClientAsync.ContainsKeyAsync(key).ConfigureAwait(false);
     }
 
     public DateTime Time()
     {
-        var result = RedisClient.ExecLua("return redis.call('TIME')", keys: [], args: [])?.GetResults();
-
-        if (result is { Count: 2 } timeResult)
-        {
-            // 提取秒数和微秒数
-            if (long.TryParse(timeResult[0], out var seconds) && long.TryParse(timeResult[1], out var microseconds))
-            {
-                // 将秒数转换为 DateTime 对象
-                var redisTime = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc).AddSeconds(seconds).AddMicroseconds(microseconds);
-
-                return redisTime;
-            }
-        }
-
-        throw new Exception($"get time error: {result}");
+        return RedisClient.GetServerTime();
     }
 
     public void Dispose()
@@ -980,8 +1203,19 @@ public partial class ServiceStackCommand : IRedisCommand, IDisposable
         if (_redisClientAsync is IDisposable redisClientAsyncDisposable)
             redisClientAsyncDisposable.Dispose();
         else if (_redisClientAsync != null)
-
             _ = _redisClientAsync.DisposeAsync().AsTask();
-        _redisClientsManager.Dispose();
+    }
+
+    public object?[]? Execute()
+    {
+        if (RedisQueueableOperation != null)
+        {
+            if (RedisQueueableOperation is global::ServiceStack.Redis.IRedisTransaction transaction)
+                transaction.Commit();
+            else if (RedisQueueableOperation is global::ServiceStack.Redis.Pipeline.IRedisPipeline pipeline)
+                pipeline.Flush();
+        }
+
+        return _commandResults.ToArray();
     }
 }

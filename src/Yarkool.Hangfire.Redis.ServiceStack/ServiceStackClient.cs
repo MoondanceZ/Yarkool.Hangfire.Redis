@@ -10,17 +10,13 @@ public class ServiceStackClient(IRedisClientsManager redisClientsManager) : Serv
     {
         ArgumentNullException.ThrowIfNull(_redisClientsManager);
 
-        using var redisClient = _redisClientsManager.GetClient();
-        var pipeline = redisClient.CreatePipeline();
-        return new ServiceStackPipeline(pipeline);
+        return new ServiceStackPipeline(_redisClientsManager);
     }
 
     public IRedisTransaction BeginTransaction()
     {
         ArgumentNullException.ThrowIfNull(_redisClientsManager);
 
-        using var redisClient = _redisClientsManager.GetClient();
-        var transaction = redisClient.CreateTransaction();
-        return new ServiceStackTransaction(transaction);
+        return new ServiceStackTransaction(_redisClientsManager);
     }
 }
