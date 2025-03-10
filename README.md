@@ -9,17 +9,14 @@ Hangfire 的 Redis 实现, 支持 `FreeRedis`, `SharpRedis`, `ServiceStack.Redis
 `Yarkool.Hangfire.Redis.ServiceStack`
 
 ```csharp
-// Redis 链接字符串
-var  redisConn = "127.0.0.1,port=6379"
-
 // FreeRedis
-var redisClient = new FreeRedisClient(new RedisClient(redisConn)); 
+var redisClient = new FreeRedisClient(new RedisClient("127.0.0.1,port=6379"); 
 
 // SharpRedis
-var redisClient = new SharpRedisClient(global::SharpRedis.Redis.UseStandalone($"host={redisConn}"));
+var redisClient = new SharpRedisClient(global::SharpRedis.Redis.UseStandalone("host=127.0.0.1,port=6379"));
 
 // ServiceStack.Redis, 该库收费, 使用前请提前注册密钥!!!
-var redisClient = new ServiceStackClient(new RedisManagerPool(redisConn.Replace(",port", ":")));
+var redisClient = new ServiceStackClient(new RedisManagerPool("127.0.0.1:6379"));
 
 // 创建 Storage
 var storage = new RedisStorage(redisClient, new RedisStorageOptions { Prefix = "hangfire:" });
