@@ -36,50 +36,57 @@ namespace Yarkool.Hangfire.Redis
 
         void IServerComponent.Execute(CancellationToken cancellationToken)
         {
-            foreach (var key in ProcessedKeys)
+            using (RedisLock.Acquire(_redisClient, _storage.GetRedisKey("expired-jobs-watcher:execute:lock"), _checkInterval))
             {
-                var redisKey = _storage.GetRedisKey(key);
-
-                var count = _redisClient.LLen(redisKey);
-                if (count == 0)
-                    continue;
-
-                Logger.InfoFormat("Removing expired records from the '{0}' list...", key);
-
-                const int batchSize = 100;
-                var keysToRemove = new List<string>();
-
-                for (var last = count - 1; last >= 0; last -= batchSize)
+                foreach (var key in ProcessedKeys)
                 {
-                    var first = Math.Max(0, last - batchSize + 1);
+                    var redisKey = _storage.GetRedisKey(key);
 
-                    var jobIds = _redisClient.LRange(redisKey, first, last).ToArray();
-                    if (jobIds.Length == 0)
+                    var count = _redisClient.LLen(redisKey);
+                    if (count == 0)
                         continue;
 
-                    var tasks = new Task[jobIds.Length];
-                    for (var i = 0; i < jobIds.Length; i++)
+                    Logger.InfoFormat("Removing expired records from the '{0}' list...", key);
+
+                    const int batchSize = 100;
+                    var keysToRemove = new List<string>();
+
+                    for (var last = count - 1; last >= 0; last -= batchSize)
                     {
-                        tasks[i] = _redisClient.ExistsAsync(_storage.GetRedisKey($"job:{jobIds[i]}"));
+                        var first = Math.Max(0, last - batchSize + 1);
+
+                        var jobIds = _redisClient.LRange(redisKey, first, last).ToArray();
+                        if (jobIds.Length == 0)
+                            continue;
+
+                        using var checkKeyPipeline = _redisClient.BeginPipeline();
+                        foreach (var jobId in jobIds)
+                        {
+                            checkKeyPipeline.Exists(_storage.GetRedisKey($"job:{jobId}"));
+                        }
+
+                        var result = checkKeyPipeline.Execute()?.Select(Convert.ToBoolean).ToList() ?? [];
+
+                        keysToRemove.AddRange(jobIds.Select((x, index) => new
+                        {
+                            JobId = x,
+                            Exist = result[index]
+                        }).Where(x => x.Exist).Select(x => x.JobId).ToList());
                     }
 
-                    Task.WaitAll(tasks, cancellationToken);
+                    if (keysToRemove.Count == 0)
+                        continue;
 
-                    keysToRemove.AddRange(jobIds.Where((t, i) => !((Task<bool>)tasks[i]).Result));
+                    Logger.InfoFormat("Removing {0} expired jobs from '{1}' list...", keysToRemove.Count, key);
+
+                    using var pipeline = _redisClient.BeginPipeline();
+                    foreach (var jobId in keysToRemove)
+                    {
+                        pipeline.LRem(_storage.GetRedisKey(key), 0, jobId);
+                    }
+
+                    pipeline.Execute();
                 }
-
-                if (keysToRemove.Count == 0)
-                    continue;
-
-                Logger.InfoFormat("Removing {0} expired jobs from '{1}' list...", keysToRemove.Count, key);
-
-                using var pipeline = _redisClient.BeginPipeline();
-                foreach (var jobId in keysToRemove)
-                {
-                    pipeline.LRem(_storage.GetRedisKey(key), 0, jobId);
-                }
-
-                pipeline.Execute();
             }
 
             cancellationToken.WaitHandle.WaitOne(_checkInterval);
